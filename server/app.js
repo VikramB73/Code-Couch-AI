@@ -68,6 +68,59 @@ function fallbackSolutions(problem, language) {
       ]
     };
   }
+
+  if (problem.toLowerCase().includes('water') && problem.toLowerCase().includes('trap')) {
+    let codeTemplate = {
+      python: {
+        brute: "def trap(height):\n    water = 0\n    for i in range(len(height)):\n        left_max = max(height[:i+1])\n        right_max = max(height[i:])\n        water += min(left_max, right_max) - height[i]\n    return water",
+        better: "def trap(height):\n    n = len(height)\n    left_max = [0] * n\n    right_max = [0] * n\n    left_max[0] = height[0]\n    right_max[n-1] = height[n-1]\n    for i in range(1, n):\n        left_max[i] = max(left_max[i-1], height[i])\n        right_max[n-1-i] = max(right_max[n-i], height[n-1-i])\n    water = sum(min(left_max[i], right_max[i]) - height[i] for i in range(n))\n    return water",
+        optimal: "def trap(height):\n    left, right = 0, len(height) - 1\n    water = 0\n    left_max, right_max = 0, 0\n    while left < right:\n        if height[left] < height[right]:\n            left_max = max(left_max, height[left])\n            water += left_max - height[left]\n            left += 1\n        else:\n            right_max = max(right_max, height[right])\n            water += right_max - height[right]\n            right -= 1\n    return water"
+      },
+      javascript: {
+        brute: "function trap(height) {\n    let water = 0;\n    for (let i = 0; i < height.length; i++) {\n        let leftMax = Math.max(...height.slice(0, i + 1));\n        let rightMax = Math.max(...height.slice(i));\n        water += Math.min(leftMax, rightMax) - height[i];\n    }\n    return water;\n}",
+        better: "function trap(height) {\n    const n = height.length;\n    const leftMax = new Array(n);\n    const rightMax = new Array(n);\n    leftMax[0] = height[0];\n    rightMax[n-1] = height[n-1];\n    for (let i = 1; i < n; i++) {\n        leftMax[i] = Math.max(leftMax[i-1], height[i]);\n        rightMax[n-1-i] = Math.max(rightMax[n-i], height[n-1-i]);\n    }\n    let water = 0;\n    for (let i = 0; i < n; i++) water += Math.min(leftMax[i], rightMax[i]) - height[i];\n    return water;\n}",
+        optimal: "function trap(height) {\n    let left = 0, right = height.length - 1;\n    let water = 0, leftMax = 0, rightMax = 0;\n    while (left < right) {\n        if (height[left] < height[right]) {\n            leftMax = Math.max(leftMax, height[left]);\n            water += leftMax - height[left];\n            left++;\n        } else {\n            rightMax = Math.max(rightMax, height[right]);\n            water += rightMax - height[right];\n            right--;\n        }\n    }\n    return water;\n}"
+      },
+      java: {
+        brute: "public static int trap(int[] height) {\n    int water = 0;\n    for (int i = 0; i < height.length; i++) {\n        int leftMax = 0, rightMax = 0;\n        for (int j = 0; j <= i; j++) leftMax = Math.max(leftMax, height[j]);\n        for (int j = i; j < height.length; j++) rightMax = Math.max(rightMax, height[j]);\n        water += Math.min(leftMax, rightMax) - height[i];\n    }\n    return water;\n}",
+        better: "public static int trap(int[] height) {\n    int n = height.length;\n    int[] leftMax = new int[n];\n    int[] rightMax = new int[n];\n    leftMax[0] = height[0];\n    rightMax[n-1] = height[n-1];\n    for (int i = 1; i < n; i++) {\n        leftMax[i] = Math.max(leftMax[i-1], height[i]);\n        rightMax[n-1-i] = Math.max(rightMax[n-i], height[n-1-i]);\n    }\n    int water = 0;\n    for (int i = 0; i < n; i++) water += Math.min(leftMax[i], rightMax[i]) - height[i];\n    return water;\n}",
+        optimal: "public static int trap(int[] height) {\n    int left = 0, right = height.length - 1;\n    int water = 0, leftMax = 0, rightMax = 0;\n    while (left < right) {\n        if (height[left] < height[right]) {\n            leftMax = Math.max(leftMax, height[left]);\n            water += leftMax - height[left];\n            left++;\n        } else {\n            rightMax = Math.max(rightMax, height[right]);\n            water += rightMax - height[right];\n            right--;\n        }\n    }\n    return water;\n}"
+      },
+      cpp: {
+        brute: "int trap(vector<int>& height) {\n    int water = 0;\n    for (int i = 0; i < height.size(); i++) {\n        int leftMax = *max_element(height.begin(), height.begin() + i + 1);\n        int rightMax = *max_element(height.begin() + i, height.end());\n        water += min(leftMax, rightMax) - height[i];\n    }\n    return water;\n}",
+        better: "int trap(vector<int>& height) {\n    int n = height.size();\n    vector<int> leftMax(n), rightMax(n);\n    leftMax[0] = height[0];\n    rightMax[n-1] = height[n-1];\n    for (int i = 1; i < n; i++) {\n        leftMax[i] = max(leftMax[i-1], height[i]);\n        rightMax[n-1-i] = max(rightMax[n-i], height[n-1-i]);\n    }\n    int water = 0;\n    for (int i = 0; i < n; i++) water += min(leftMax[i], rightMax[i]) - height[i];\n    return water;\n}",
+        optimal: "int trap(vector<int>& height) {\n    int left = 0, right = height.size() - 1;\n    int water = 0, leftMax = 0, rightMax = 0;\n    while (left < right) {\n        if (height[left] < height[right]) {\n            leftMax = max(leftMax, height[left]);\n            water += leftMax - height[left];\n            left++;\n        } else {\n            rightMax = max(rightMax, height[right]);\n            water += rightMax - height[right];\n            right--;\n        }\n    }\n    return water;\n}"
+      }
+    };
+
+    const c = codeTemplate[language] || codeTemplate['python'];
+    return {
+      approaches: [
+        {
+          name: 'Brute Force (Max Finding)',
+          timeComplexity: 'O(n²)',
+          spaceComplexity: 'O(1)',
+          code: c.brute,
+          analysis: 'For each bar, find the maximum height on its left and right. Water trapped at that position is the minimum of the two maxes minus the bar height. Simple but inefficient due to repeated max calculations.'
+        },
+        {
+          name: 'Better (Prefix & Suffix Arrays)',
+          timeComplexity: 'O(n)',
+          spaceComplexity: 'O(n)',
+          code: c.better,
+          analysis: 'Pre-compute left max and right max for each position using two passes. Then calculate trapped water in a third pass. Eliminates repeated calculations at the cost of extra space.'
+        },
+        {
+          name: 'Optimal (Two-Pointer)',
+          timeComplexity: 'O(n)',
+          spaceComplexity: 'O(1)',
+          code: c.optimal,
+          analysis: 'Use two pointers moving inward. Track left max and right max on the fly. Move the pointer with smaller height to guarantee correct water calculation. Most efficient and elegant solution.'
+        }
+      ]
+    };
+  }
+
   return null;
 }
 
