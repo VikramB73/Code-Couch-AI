@@ -12,6 +12,11 @@ CodeCoach AI is designed for developers and students who want to:
 
 ## ✨ Features
 
+- **Verified LeetCode Solutions Database**: Pre-built, tested solutions for popular LeetCode problems
+  - Currently includes: Two Sum (LeetCode 1), Trapping Rain Water (LeetCode 42), Fibonacci Series
+  - Guaranteed accurate, optimized algorithms with correct syntax
+  - LeetCode problem number recognition (e.g., "LeetCode 1", "Problem 42")
+
 - **Triple-Approach Solutions**: Every problem gets three implementations
   - Brute Force: Simple, conceptually clear but may be inefficient
   - Better Approach: Improved efficiency with moderate complexity
@@ -29,14 +34,20 @@ CodeCoach AI is designed for developers and students who want to:
   - Space Complexity analysis
   - Comprehensive explanation of the approach
 
-- **Interactive Learning**: 
+- **Intelligent Fallback System**:
+  - Priority 1: Verified database solutions for known problems
+  - Priority 2: AI-generated solutions for new problems (powered by Gemini Flash)
+  - Priority 3: Generic templates ensuring system never fails
+
+- **Interactive Learning**:
   - Expandable analysis sections to dive deeper
   - Clean, modern UI for easy navigation
-  - Instant code generation powered by Gemini AI
+  - Instant code generation with guaranteed accuracy
 
 ## 💡 How to Use
 
-1. **Enter a Problem**: Type any DSA question or algorithm topic (e.g., "Fibonacci series", "Binary Search", "Two Sum Problem")
+1. **Enter a Problem**: Type any DSA question, algorithm topic, or LeetCode problem
+   - Examples: "Fibonacci series", "Binary Search", "Two Sum Problem", "LeetCode 1", "Problem 42"
 2. **Select Language**: Choose your preferred programming language
 3. **Generate Solutions**: Click "Generate Solutions" to get three approaches
 4. **Learn & Compare**: View code side-by-side, compare complexities, and read detailed analysis
@@ -46,6 +57,7 @@ CodeCoach AI is designed for developers and students who want to:
 
 - **Interview Preparation**: Study multiple solutions for common coding interview questions
 - **Algorithm Learning**: Understand different problem-solving strategies
+- **LeetCode Practice**: Get verified solutions for LeetCode problems with problem numbers
 - **Code Review**: Learn best practices and optimization techniques
 - **Teaching**: Share with students to illustrate algorithm concepts
 - **Quick Reference**: Get instant solutions with explanations
