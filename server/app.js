@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { findSolution } = require('./solutions');
 
 const app = express();
 const port = 3001;
@@ -193,21 +194,64 @@ app.post('/generate-solutions', async (req, res) => {
     return res.status(400).json({ error: 'Problem description is required' });
   }
 
+  const lang = (language || 'python').toLowerCase();
+
+  // PRIORITY 1: Check solutions database for accurate, verified solutions
+  const dbSolution = findSolution(problem, lang);
+  if (dbSolution) {
+    const solutions = dbSolution.solutions[lang] || dbSolution.solutions['python'];
+    const complexities = dbSolution.complexities;
+    const analysis = dbSolution.analysis;
+
+    const response = {
+      title: dbSolution.title,
+      description: dbSolution.description,
+      leetcodeNum: dbSolution.leetcodeNum,
+      source: 'LeetCode Database',
+      approaches: [
+        {
+          name: 'Brute Force Approach',
+          timeComplexity: complexities.brute.time,
+          spaceComplexity: complexities.brute.space,
+          code: solutions.brute,
+          analysis: analysis.brute
+        },
+        {
+          name: 'Better Approach',
+          timeComplexity: complexities.better.time,
+          spaceComplexity: complexities.better.space,
+          code: solutions.better,
+          analysis: analysis.better
+        },
+        {
+          name: 'Optimal Approach',
+          timeComplexity: complexities.optimal.time,
+          spaceComplexity: complexities.optimal.space,
+          code: solutions.optimal,
+          analysis: analysis.optimal
+        }
+      ]
+    };
+    
+    return res.json(response);
+  }
+
+  // PRIORITY 2: Try Gemini API for problems not in database
   try {
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const prompt = `You are a coding expert. Given the coding problem or topic: "${problem}", provide exactly 3 different algorithmic solutions in ${language}: 
+    const prompt = `You are a coding expert. Given the coding problem: "${problem}", provide exactly 3 different algorithmic solutions in ${lang}: 
 1. Brute force approach
 2. Better approach  
 3. Optimal approach
 
-For each approach, structure your response as:
+For each approach, provide:
 - Approach name
-- Time complexity
+- Time complexity (e.g., O(n), O(n²))
 - Space complexity
-- Complete code in ${language}
+- Complete, syntactically correct, runnable code in ${lang}
 - Detailed analysis explaining the approach
 
-Return ONLY a valid JSON object with this exact structure:
+CRITICAL: Return ONLY a valid JSON object with this exact structure (no markdown, no comments):
 {
   "approaches": [
     {
@@ -220,9 +264,7 @@ Return ONLY a valid JSON object with this exact structure:
     {...},
     {...}
   ]
-}
-
-Ensure the code is syntactically correct and runnable. If the problem is a topic like "fibonacci series", provide solutions for common problems related to it, such as generating the series or finding the nth number.`;
+}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -241,25 +283,43 @@ Ensure the code is syntactically correct and runnable. If the problem is a topic
     }
 
     if (data && data.approaches && Array.isArray(data.approaches) && data.approaches.length >= 3) {
-      return res.json(data);
+      return res.json({
+        source: 'Gemini AI',
+        approaches: data.approaches
+      });
     }
 
-    // If parsing fails, try fallback for known problems
-    const fallback = fallbackSolutions(problem, language || 'python');
+    // If parsing fails, use fallback
+    const fallback = fallbackSolutions(problem, lang);
     if (fallback) {
-      return res.json(fallback);
+      return res.json({
+        source: 'Fallback (Generic)',
+        approaches: fallback.approaches
+      });
     }
 
     // Last resort: generate generic solutions
-    return res.json(generateGenericSolutions(problem, language || 'python'));
+    return res.json({
+      source: 'Fallback (Generic)',
+      approaches: generateGenericSolutions(problem, lang).approaches
+    });
   } catch (error) {
-    console.error('Error:', error);
-    // Always return a solution, never an error
-    const fallback = fallbackSolutions(problem, language || 'python');
+    console.error('Gemini Error:', error);
+    
+    // PRIORITY 3: Fallback solutions
+    const fallback = fallbackSolutions(problem, lang);
     if (fallback) {
-      return res.json(fallback);
+      return res.json({
+        source: 'Fallback (Generic)',
+        approaches: fallback.approaches
+      });
     }
-    res.json(generateGenericSolutions(problem, language || 'python'));
+
+    // Last resort: generic solutions
+    return res.json({
+      source: 'Fallback (Generic)',
+      approaches: generateGenericSolutions(problem, lang).approaches
+    });
   }
 });
 
